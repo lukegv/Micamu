@@ -1,0 +1,84 @@
+﻿body {
+    height: 100vh;
+    margin: 0;
+    padding: 0 2.5%;
+    background-color: #FFD300; /* Harting yellow */
+}
+
+p {
+    margin: 0; /* reset default margin */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+header {
+    height: 100px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.white-round {
+    border-radius: 20px;
+    background-color: white;
+    margin: 10px;
+    padding: 10px;
+}
+
+#main {
+    height: calc(100% - 120px);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+#device-list {
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.device-item {
+    margin: 5px;
+    padding: 5px;
+    border-style: solid;
+    border-width: 5px;
+    border-radius: 5px;
+    border-color: #FFD300;
+}
+
+.selected {
+    margin: 2px;
+    border-width: 8px;
+}
+
+#container-list {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    align-items: flex-start;
+    justify-content: flex-start;
+    overflow-y: auto;
+}
+
+.container-item {
+    margin: 5px;
+    padding: 5px;
+    flex: 1 0 150px;
+    height: 150px;
+    border: 5px solid #FFD300;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+.pseudo-item {
+    margin: 5px;
+    flex: 1 0 150px;
+    height: 0;
+    border: none;
+    box-sizing: border-box;
+}
