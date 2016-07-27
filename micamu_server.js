@@ -3,15 +3,15 @@ var url = require('url');
 var path = require('path');
 var fs = require('fs');
 var mime = require('mime');
-// Different packages are used for server and client functionality
+// Different json-rpc packages are used for server and client functionality
 var rpc_server = require('jsonrpc');
 var rpc_client = require('node-json-rpc');
 
 http.createServer(function(request, response) {
 	if (request.method == "GET") {
 		var uri = url.parse(request.url).pathname;
-		var file = path.join(process.cwd(), '/view', uri);
-		handleFileRequest(file, response);
+		var file = path.join(process.cwd(), '/www', uri);
+		handleWWW(file, response);
 	}
 	if (request.method == "POST") {
 		new rpc_server.RPCHandler(request, response, rpcMethods, true);
@@ -19,9 +19,9 @@ http.createServer(function(request, response) {
 }).listen(8000);
 
 rpcMethods = {
-	call: function(rpc, params) {
+	proxy: function(rpc, params) {
 		var endpoint = params.endpoint.split(':'); delete params.endpoint;
-		var func_name = params.func_name; delete params.func_name;
+		var method = params.method; delete params.method;
 		var options = {
 			port: parseInt(endpoint[1]),
 			host: endpoint[0],
@@ -29,21 +29,21 @@ rpcMethods = {
 			strict: false
 		};
 		var client = new rpc_client.Client(options);
-		client.call({'jsonrpc': '2.0', 'method': func_name, 'params': params, 'id': 0}, function (error, response) {
+		client.call({'jsonrpc': '2.0', 'method': method, 'params': params, 'id': 0}, function (error, response) {
 			if (error) {
 				rpc.error(error);
 			} else {
-				rpc.response(response);
+				rpc.response(response.result);
 			}
 		});
 	}
 }
 
-function handleFileRequest(file, response) {
+function handleWWW(file, response) {
 	if (fs.existsSync(file)) {
 		if (fs.statSync(file).isDirectory()) {
 			file += "/index.html";
-			handleFileRequest(file, response);
+			handleWWW(file, response);
 		} else {
 			var contentType = mime.lookup(file);
 			fs.readFile(file, function(err, content) {
