@@ -16,20 +16,42 @@ var Container = (function () {
     };
     return Container;
 }());
+var DeviceState;
+(function (DeviceState) {
+    DeviceState[DeviceState["Connected"] = 0] = "Connected";
+    DeviceState[DeviceState["Pending"] = 1] = "Pending";
+    DeviceState[DeviceState["Disconnected"] = 2] = "Disconnected";
+})(DeviceState || (DeviceState = {}));
 var Device = (function () {
     function Device(endpoint) {
         this.Endpoint = endpoint;
-        this.IsOffline = false;
+        this.Containers = [];
+        this.State = DeviceState.Disconnected;
         this.invoke('get_containers', {}, this.onContainerResult);
     }
+    Device.prototype.isConnected = function () {
+        return this.State == DeviceState.Connected;
+    };
+    Device.prototype.isPending = function () {
+        return this.State == DeviceState.Pending;
+    };
+    Device.prototype.isDisconnected = function () {
+        return this.State == DeviceState.Disconnected;
+    };
+    Device.prototype.hasNoContainers = function () {
+        return this.isConnected() && this.Containers.length == 0;
+    };
+    Device.prototype.checkError = function (error) {
+        if (error) {
+            this.State = DeviceState.Connected;
+        }
+    };
     Device.prototype.invoke = function (method, params, onResult) {
+        this.State = DeviceState.Pending;
         var copy = this;
         json_rpc(this.Endpoint, method, params, function (result, error) {
             onResult(copy, result, error);
         });
-    };
-    Device.prototype.checkError = function (error) {
-        this.IsOffline = (error !== null);
     };
     /* Callbacks */
     Device.prototype.onContainerResult = function (instance, result, error) {

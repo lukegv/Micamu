@@ -26,29 +26,55 @@ class Container {
     }
 }
 
+enum DeviceState {
+    Connected = 0,
+    Pending = 1,
+    Disconnected = 2
+}
+
 class Device {
     Endpoint: string;
 
     Containers: Container[];
 
-    IsOffline: boolean;
-    ErrorMessage: string;
+    State: DeviceState;
+    LastError: string;
 
     constructor(endpoint: string) {
         this.Endpoint = endpoint;
-        this.IsOffline = false;
+        this.Containers = [];
+        this.State = DeviceState.Disconnected;
         this.invoke('get_containers', {}, this.onContainerResult);
     }
 
+    isConnected(): boolean {
+        return this.State == DeviceState.Connected;
+    }
+
+    isPending(): boolean {
+        return this.State == DeviceState.Pending;
+    }
+
+    isDisconnected(): boolean {
+        return this.State == DeviceState.Disconnected;
+    }
+
+    hasNoContainers(): boolean {
+        return this.isConnected() && this.Containers.length == 0;
+    }
+
+    checkError(error: any) {
+        if (error) {
+            this.State = DeviceState.Connected;
+        }
+    }
+
     invoke(method, params, onResult) {
+        this.State = DeviceState.Pending;
         var copy = this;
         json_rpc(this.Endpoint, method, params, function(result: any, error: any) {
             onResult(copy, result, error);
         });
-    }
-
-    checkError(error: any) {
-        this.IsOffline = (error !== null);
     }
 
     /* Callbacks */

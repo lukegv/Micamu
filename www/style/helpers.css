@@ -1,0 +1,23 @@
+.space {
+    margin-right: 8px;
+}
+
+.green {
+    color: green;
+}
+
+.blue {
+    color: dodgerblue;
+}
+
+.red {
+    color: red;
+}
+
+.swipe-right {
+    margin-left: auto !important;
+}
+
+.input-max-width {
+    max-width: 300px;
+}

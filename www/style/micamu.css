@@ -19,7 +19,7 @@ header {
 }
 
 .white-round {
-    border-radius: 20px;
+    border-radius: 10px;
     background-color: white;
     margin: 10px;
     padding: 10px;
@@ -33,14 +33,14 @@ header {
     align-items: stretch;
 }
 
-#device-list {
+#list-view {
     flex: 0 0 350px;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
 }
 
-#device-actions {
+#list-actions {
     width: 100%;
     height: auto;
     padding-bottom: 7px;
@@ -49,7 +49,7 @@ header {
     display: flex;
 }
 
-#device-actions > *:not(:first-child) {
+.list-action:last-child {
     margin-left: 5px;
 }
 
@@ -60,11 +60,12 @@ header {
     border-radius: 5px;
     font-size: 16pt;
     display: flex;
-    justify-content: space-between;
+    align-items: center;
 }
 
-.offline {
-    background-color: lightcoral;
+.device-item > * {
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .selected {
@@ -72,7 +73,7 @@ header {
     border-width: 8px;
 }
 
-#container-list {
+#info-view {
     flex: 1 1 auto;
     display: flex;
     flex-direction: row;
@@ -83,22 +84,25 @@ header {
     overflow-y: auto;
 }
 
-#container-actions {
+#info-actions {
     width: 100%;
     height: auto;
     padding-bottom: 7px;
     border-bottom: 1px solid black;
     margin-bottom: 7px;
     display: flex;
-    justify-content: space-between;
 }
 
-#container-actions > *:not(:first-child) {
+#info-actions > *:not(:first-child) {
     margin-left: 5px;
 }
 
-#add-container {
-    max-width: 300px;
+.info-message {
+    margin-top: 25px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    font-size: 14pt;
 }
 
 .container-item {
