@@ -1,4 +1,6 @@
-﻿// Global angular scope
+﻿/// <reference path="json-rpc.js" />
+
+// Global angular scope, required for view updates
 let AngularScope;
 
 class Container {
@@ -11,18 +13,6 @@ class Container {
         this.Name = name;
         this.ParentDevice = parent;
         this.IsRunning = isRunning;
-    }
-
-    start() {
-        json_rpc(this.ParentDevice.Endpoint, 'start_container', { 'name': this.Name}, this.onResult);
-    }
-
-    stop() {
-        json_rpc(this.ParentDevice.Endpoint, 'stop_container', { 'name': this.Name }, this.onResult);
-    }
-
-    onResult(result: any, error: any) {
-        
     }
 }
 
@@ -44,7 +34,7 @@ class Device {
         this.Endpoint = endpoint;
         this.Containers = [];
         this.State = DeviceState.Disconnected;
-        this.invoke('get_containers', {}, this.onContainerResult);
+        this.request('get_containers', {}, this.onContainerResult);
     }
 
     isConnected(): boolean {
@@ -63,25 +53,43 @@ class Device {
         return this.isConnected() && this.Containers.length == 0;
     }
 
-    checkError(error: any) {
-        if (error) {
-            this.State = DeviceState.Connected;
-        }
+    refresh(): void {
+        this.request('get_containers', {}, this.onContainerResult);
     }
 
-    invoke(method, params, onResult) {
-        this.State = DeviceState.Pending;
-        var copy = this;
+    /* Requests */
+
+    request(method: string, params: any, onResult: any) : void {
+        // Set the state to pending
+        if (this.State == DeviceState.Disconnected) {
+            this.State = DeviceState.Pending;
+        }
+        // Store instance for callback
+        var instance = this;
         json_rpc(this.Endpoint, method, params, function(result: any, error: any) {
-            onResult(copy, result, error);
+            if (instance.checkError(error)) { // Check for error
+                instance.State = DeviceState.Connected;
+                onResult(instance, result);
+            }
+            AngularScope.$apply(); // Update the view from the callback
         });
+    }
+
+    checkError(error: any): boolean {
+        if (error) {
+            this.State = DeviceState.Disconnected;
+            this.LastError = JSON.stringify(error, null, 4);
+        }
+        return error == null;
     }
 
     /* Callbacks */
 
-    onContainerResult(instance: Device, result: any, error: any) {
-        instance.checkError(error);
-        AngularScope.$apply(); // required to update the view from the callback
+    onContainerResult(instance: Device, containers: any): void {
+        instance.Containers = [];
+        for (var container in containers) {
+            instance.Containers.push(new Container(container, instance, containers[container]));
+        }
     }
 }
 
@@ -91,14 +99,11 @@ class Session {
     Devices: Device[];
     SelectedDevice: Device;
 
-    EndpointInput: string;
-    EndpointValid: boolean;
-
     constructor($scope) {
-        AngularScope = $scope; // set global angular scope
+        AngularScope = $scope; // Set global angular scope
         this.Helper = new Helper();
         this.Devices = [
-            new Device("localhost:8001")
+            new Device("127.0.0.1:8001")
         ];
     }
 

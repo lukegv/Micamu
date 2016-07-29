@@ -1,4 +1,5 @@
-// Global angular scope
+/// <reference path="json-rpc.js" />
+// Global angular scope, required for view updates
 var AngularScope;
 var Container = (function () {
     function Container(name, parent, isRunning) {
@@ -6,14 +7,6 @@ var Container = (function () {
         this.ParentDevice = parent;
         this.IsRunning = isRunning;
     }
-    Container.prototype.start = function () {
-        json_rpc(this.ParentDevice.Endpoint, 'start_container', { 'name': this.Name }, this.onResult);
-    };
-    Container.prototype.stop = function () {
-        json_rpc(this.ParentDevice.Endpoint, 'stop_container', { 'name': this.Name }, this.onResult);
-    };
-    Container.prototype.onResult = function (result, error) {
-    };
     return Container;
 }());
 var DeviceState;
@@ -27,7 +20,7 @@ var Device = (function () {
         this.Endpoint = endpoint;
         this.Containers = [];
         this.State = DeviceState.Disconnected;
-        this.invoke('get_containers', {}, this.onContainerResult);
+        this.request('get_containers', {}, this.onContainerResult);
     }
     Device.prototype.isConnected = function () {
         return this.State == DeviceState.Connected;
@@ -41,31 +34,47 @@ var Device = (function () {
     Device.prototype.hasNoContainers = function () {
         return this.isConnected() && this.Containers.length == 0;
     };
-    Device.prototype.checkError = function (error) {
-        if (error) {
-            this.State = DeviceState.Connected;
-        }
+    Device.prototype.refresh = function () {
+        this.request('get_containers', {}, this.onContainerResult);
     };
-    Device.prototype.invoke = function (method, params, onResult) {
-        this.State = DeviceState.Pending;
-        var copy = this;
+    /* Requests */
+    Device.prototype.request = function (method, params, onResult) {
+        // Set the state to pending
+        if (this.State == DeviceState.Disconnected) {
+            this.State = DeviceState.Pending;
+        }
+        // Store instance for callback
+        var instance = this;
         json_rpc(this.Endpoint, method, params, function (result, error) {
-            onResult(copy, result, error);
+            if (instance.checkError(error)) {
+                instance.State = DeviceState.Connected;
+                onResult(instance, result);
+            }
+            AngularScope.$apply(); // Update the view from the callback
         });
     };
+    Device.prototype.checkError = function (error) {
+        if (error) {
+            this.State = DeviceState.Disconnected;
+            this.LastError = JSON.stringify(error, null, 4);
+        }
+        return error == null;
+    };
     /* Callbacks */
-    Device.prototype.onContainerResult = function (instance, result, error) {
-        instance.checkError(error);
-        AngularScope.$apply(); // required to update the view from the callback
+    Device.prototype.onContainerResult = function (instance, containers) {
+        instance.Containers = [];
+        for (var container in containers) {
+            instance.Containers.push(new Container(container, instance, containers[container]));
+        }
     };
     return Device;
 }());
 var Session = (function () {
     function Session($scope) {
-        AngularScope = $scope; // set global angular scope
+        AngularScope = $scope; // Set global angular scope
         this.Helper = new Helper();
         this.Devices = [
-            new Device("localhost:8001")
+            new Device("127.0.0.1:8001")
         ];
     }
     Session.prototype.add = function (newEndpoint) {

@@ -16,7 +16,7 @@
     <!-- Source: https://github.com/datagraph/jquery-jsonrpc -->
     <script src="libs/jquery.jsonrpc.js"></script>
     <!-- Micamu javascript files -->
-    <script src="call.js"></script>
+    <script src="json-rpc.js"></script>
     <script src="micamu.js"></script>
 </head>
 <body ng-app="Micamu">
@@ -78,21 +78,27 @@
                     <i class="fa fa-repeat space"></i>Reboot
                 </button>
                 <!-- Refresh action -->
-                <button class="info-action btn btn-info swipe-right" ng-disabled="session.SelectedDevice.isPending()">
+                <button class="info-action btn btn-info swipe-right" ng-disabled="session.SelectedDevice.isPending()"
+                        ng-click="session.SelectedDevice.refresh()">
                     <i class="fa fa-refresh space"></i>Refresh
                 </button>
             </div>
-            <!-- No container info -->
-            <div class="info-message" ng-if="session.SelectedDevice.hasNoContainers()">
-                <p><i class="blue fa fa-info-circle space"></i>No containers are installed on this device.</p>
+            <!-- Disconnection info -->
+            <div class="info-message" ng-if="session.SelectedDevice.isDisconnected()">
+                <p><i class="red fa fa-exclamation-triangle space"></i>The last connection request failed.</p>
+                <p class="multiline">{{session.SelectedDevice.LastError}}</p>
             </div>
             <!-- Pending info -->
             <div class="info-message" ng-if="session.SelectedDevice.isPending()">
                 <p><i class="blue fa fa-spinner fa-pulse space"></i>Trying to connect to the device ...</p>
             </div>
+            <!-- No container info -->
+            <div class="info-message" ng-if="session.SelectedDevice.hasNoContainers()">
+                <p><i class="blue fa fa-info-circle space"></i>No containers are installed on this device.</p>
+            </div>
             <!-- Containers -->
             <div class="container-item" ng-if="session.SelectedDevice.isConnected()" ng-repeat="container in session.SelectedDevice.Containers">
-                <p>Container</p>
+                <p>{{container.Name}}</p>
             </div>
             <!-- Pseudo elements to achieve constant container sizes -->
             <div class="pseudo-item" ng-if="session.SelectedDevice.isConnected()" ng-repeat="pseudo in session.Helper.getPseudos(10) track by $index" ></div>

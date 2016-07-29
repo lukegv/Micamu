@@ -30,10 +30,18 @@ rpcMethods = {
 		};
 		var client = new rpc_client.Client(options);
 		client.call({'jsonrpc': '2.0', 'method': method, 'params': params, 'id': 0}, function (error, response) {
-			if (error) {
-				rpc.error(error);
+			if (!error && !response) {
+				rpc.error({
+					"code": "ENORPCRESP",
+					"address": options.host,
+					"port": options.port
+				});
 			} else {
-				rpc.response(response.result);
+				if (error) {
+					rpc.error(error);
+				} else {
+					rpc.response(response.result);
+				}
 			}
 		});
 	}

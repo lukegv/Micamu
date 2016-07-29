@@ -101,7 +101,8 @@ header {
     margin-top: 25px;
     width: 100%;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     font-size: 14pt;
 }
 
