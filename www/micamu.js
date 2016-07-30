@@ -8,20 +8,22 @@ var Container = (function () {
         this.IsRunning = isRunning;
     }
     Container.prototype.start = function () {
-        this.request(this, 'start_container', { 'name': this.Name }, this.onCommandResult);
+        this.request('start_container', { 'name': this.Name }, this.onCommandResult);
     };
     Container.prototype.stop = function () {
-        this.request(this, 'stop_container', { 'name': this.Name }, this.onCommandResult);
+        this.request('stop_container', { 'name': this.Name }, this.onCommandResult);
     };
     Container.prototype.requestState = function () {
-        this.request(this, 'get_state', { 'name': this.Name }, this.onStateResult);
+        this.request('get_state', { 'name': this.Name }, this.onStateResult);
     };
     Container.prototype.setState = function (state) {
         this.IsRunning = state;
     };
     /* Requests */
-    Container.prototype.request = function (instance, method, params, onResult) {
-        json_rpc(this.ParentDevice.Endpoint, method, params, function (result, error) {
+    Container.prototype.request = function (method, params, onResult) {
+        // Store instance for callbacks
+        var instance = this;
+        json_rpc(instance.ParentDevice.Endpoint, method, params, function (result, error) {
             if (instance.ParentDevice.hasNoError(error)) {
                 instance.ParentDevice.State = DeviceState.Connected;
                 onResult(instance, result);
@@ -64,7 +66,7 @@ var Device = (function () {
         return this.isConnected() && this.Containers.length == 0;
     };
     Device.prototype.requestContainers = function () {
-        this.request(this, 'get_containers', {}, this.onContainerResult);
+        this.request('get_containers', {}, this.onContainerResult);
     };
     Device.prototype.setContainers = function (containers) {
         this.Containers = [];
@@ -73,6 +75,7 @@ var Device = (function () {
         }
     };
     Device.prototype.reboot = function () {
+        this.request('reboot', {}, function () { });
     };
     Device.prototype.isContainerNameValid = function (name) {
         if (name && name.length > 0) {
@@ -83,17 +86,19 @@ var Device = (function () {
         }
     };
     Device.prototype.installContainer = function (name) {
-        this.request(this, 'install_container', { 'name': name }, this.onCommandResult);
+        this.request('install_container', { 'name': name }, this.onCommandResult);
     };
     Device.prototype.deleteContainer = function (container) {
-        this.request(this, 'delete_container', { 'name': container.Name }, this.onCommandResult);
+        this.request('delete_container', { 'name': container.Name }, this.onCommandResult);
     };
     /* Requests */
-    Device.prototype.request = function (instance, method, params, onResult) {
+    Device.prototype.request = function (method, params, onResult) {
         // Set the state to pending if currently disconnected
         if (this.State == DeviceState.Disconnected) {
             this.State = DeviceState.Pending;
         }
+        // Store instance for callbacks
+        var instance = this;
         json_rpc(this.Endpoint, method, params, function (result, error) {
             if (instance.hasNoError(error)) {
                 instance.State = DeviceState.Connected;

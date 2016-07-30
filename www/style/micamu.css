@@ -61,10 +61,11 @@ header {
     align-items: center;
 }
 
-.device-item > * {
+.device-item > *:not(:last-child) {
     margin: 0 5px;
 }
 
+/* Highlights the selected device item */
 .selected {
     margin: 2px;
     border-width: 8px;

@@ -1,21 +1,23 @@
-var http = require("http"),
-	RPCHandler = require("jsonrpc").RPCHandler;
+var http = require("http");
+var	RPCHandler = require("jsonrpc").RPCHandler;
 
-var port = 8001;
-var state = {base:true,
-			Container1: true,
-			Container2: false
-			}
+var state =
+{
+	base:true,
+	Container1: true,
+	Container2: false
+}
 
-console.log("Started DummyMICA with Base:true, Container1:true & Container2:false")
-console.log("Waiting for JSON RPC requests on port " + port)
-			
-// start server
+var args = process.argv.slice(2);
+var port = (args.length > 0) ? parseInt(args[0]) : 8000;
+console.log("VirtualMICA listening on port " + port)
+
+// Start server
 http.createServer(function (request, response) {
-    if(request.method == "POST"){
+    if(request.method == "POST") {
         // if POST request, handle RPC
         new RPCHandler(request, response, RPCMethods, true);
-    }else{
+    } else {
         // if GET request response with greeting
         response.end("Hello world!");
     }
@@ -25,8 +27,6 @@ http.createServer(function (request, response) {
 RPCMethods = {
     // NB! private method names are preceeded with an underscore
     stop_container: function(rpc, param1){
-		console.log('stop');
-		console.log(param1);
 		if (typeof state[param1.name] == 'undefined'){
 			var answere = {container_state:"container unknown"}
 		}
@@ -37,8 +37,6 @@ RPCMethods = {
 		rpc.response(answere);
     },
     start_container: function(rpc, param1){
-		console.log('start');
-		console.log(param1);
 		if (typeof state[param1.name] == 'undefined'){
 			var answere = {container_state:"container unknown"}
 		}
@@ -49,8 +47,6 @@ RPCMethods = {
 		rpc.response(answere);
     },
     delete_container: function(rpc, param1){
-		console.log('delete');
-		console.log(param1);
 		if (typeof state[param1.name] == 'undefined'){
 			var answere = {container_state:"container unknown"}
 		}
@@ -61,8 +57,6 @@ RPCMethods = {
 		rpc.response(answere);
     },
 	install_container: function(rpc, param1){
-		console.log('install');
-		console.log(param1);
 		if (typeof state[param1.name] == 'undefined'){
 			var answere = {installed_container:param1.name}
 			state[param1.name] = true
@@ -73,8 +67,6 @@ RPCMethods = {
 		rpc.response(answere);
 	},
 	get_state: function(rpc, param1){
-		console.log('get_state');
-		console.log(param1);
 		if (typeof state[param1.name] == 'undefined'){
 			var answere = {container_state:"container unknown"}
 		}
@@ -84,8 +76,6 @@ RPCMethods = {
 		rpc.response(answere);
     },
     get_containers: function(rpc, param1){
-		console.log('get_containers');
-		console.log(param1);
 		var answere = state;
 		rpc.response(answere);
     },

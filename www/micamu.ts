@@ -16,15 +16,15 @@ class Container {
     }
 
     start(): void {
-        this.request(this, 'start_container', { 'name': this.Name }, this.onCommandResult);
+        this.request('start_container', { 'name': this.Name }, this.onCommandResult);
     }
 
     stop(): void {
-        this.request(this, 'stop_container', { 'name': this.Name }, this.onCommandResult);
+        this.request('stop_container', { 'name': this.Name }, this.onCommandResult);
     }
 
     requestState(): void {
-        this.request(this, 'get_state', { 'name': this.Name }, this.onStateResult);
+        this.request('get_state', { 'name': this.Name }, this.onStateResult);
     }
 
     setState(state: boolean): void {
@@ -33,8 +33,10 @@ class Container {
 
     /* Requests */
 
-    request(instance: Container, method: string, params: any, onResult: any): void {
-        json_rpc(this.ParentDevice.Endpoint, method, params, function(result: any, error: any) {
+    request(method: string, params: any, onResult: any): void {
+        // Store instance for callbacks
+        var instance = this;
+        json_rpc(instance.ParentDevice.Endpoint, method, params, function(result: any, error: any) {
             if (instance.ParentDevice.hasNoError(error)) {
                 instance.ParentDevice.State = DeviceState.Connected;
                 onResult(instance, result);
@@ -93,7 +95,7 @@ class Device {
     }
 
     requestContainers(): void {
-        this.request(this, 'get_containers', {}, this.onContainerResult);
+        this.request('get_containers', {}, this.onContainerResult);
     }
 
     setContainers(containers): void {
@@ -104,7 +106,7 @@ class Device {
     }
 
     reboot(): void {
-        
+        this.request('reboot', {}, () => {});
     }
 
     isContainerNameValid(name: string): boolean {
@@ -116,20 +118,22 @@ class Device {
     }
 
     installContainer(name: string): void {
-        this.request(this, 'install_container', { 'name': name }, this.onCommandResult);
+        this.request('install_container', { 'name': name }, this.onCommandResult);
     }
 
     deleteContainer(container: Container): void {
-        this.request(this, 'delete_container', { 'name': container.Name }, this.onCommandResult);
+        this.request('delete_container', { 'name': container.Name }, this.onCommandResult);
     }
 
     /* Requests */
 
-    request(instance: Device, method: string, params: any, onResult: any) : void {
+    request(method: string, params: any, onResult: any) : void {
         // Set the state to pending if currently disconnected
         if (this.State == DeviceState.Disconnected) {
             this.State = DeviceState.Pending;
         }
+        // Store instance for callbacks
+        var instance = this;
         json_rpc(this.Endpoint, method, params, function(result: any, error: any) {
             if (instance.hasNoError(error)) { // Check for error
                 instance.State = DeviceState.Connected;

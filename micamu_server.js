@@ -7,23 +7,27 @@ var mime = require('mime');
 var rpc_server = require('jsonrpc');
 var rpc_client = require('node-json-rpc');
 
-// Run a web server on port 8000
+var args = process.argv.slice(2);
+var port = (args.length > 0) ? parseInt(args[0]) : 8000;
+console.log("Micamu server listening on port " + port);
+
+// Run a web server on given port
 http.createServer(function(request, response) {
 	// Serve GET requests like a file server
 	if (request.method == "GET") {
 		var uri = url.parse(request.url).pathname;
 		var file = path.join(process.cwd(), '/www', uri);
-		handleFile(file, response);
+		handleFileRequest(file, response);
 	}
 	// Serve POST requests as JSON RPC requests
 	if (request.method == "POST") {
 		new rpc_server.RPCHandler(request, response, rpcMethods, true);
 	}
-}).listen(8000);
+}).listen(port);
 
 // Define the served JSON RPC methods
 rpcMethods = {
-	// This routes any request to a given endpoint via JSON RPC
+	// This routes any JSON RPC request to a given endpoint
 	proxy: function(rpc, params) {
 		var endpoint = params.endpoint.split(':'); delete params.endpoint;
 		var method = params.method; delete params.method;
@@ -53,12 +57,12 @@ rpcMethods = {
 }
 
 // Handles a file request
-function handleFile(file, response) {
+function handleFileRequest(file, response) {
 	if (fs.existsSync(file)) {
 		if (fs.statSync(file).isDirectory()) {
 			// Use index.html if a directory is requested
 			file += "/index.html";
-			handleFile(file, response);
+			handleFileRequest(file, response);
 		} else {
 			var contentType = mime.lookup(file);
 			fs.readFile(file, function(err, content) {

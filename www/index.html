@@ -78,7 +78,7 @@
                 <!-- Reboot device action -->
                 <button class="info-action btn btn-warning" ng-disabled="!session.SelectedDevice.isConnected()"
                         ng-click="session.SelectedDevice.reboot()">
-                    <i class="fa fa-repeat space"></i>Reboot
+                    <i class="fa fa-power-off space"></i>Reboot
                 </button>
                 <!-- Refresh device action -->
                 <button class="info-action btn btn-info swipe-right" ng-disabled="session.SelectedDevice.isPending()"
@@ -104,7 +104,7 @@
                     ng-mouseover="mouseover = true" ng-mouseleave="mouseover = false">
                 <p class="container-title">{{container.Name}}</p>
                 <i class="container-icon fa" ng-show="!mouseover" 
-                    ng-class="{ 'fa-play': container.IsRunning, 'fa-stop': !container.IsRunning }"></i>
+                    ng-class="{ 'fa-gears': container.IsRunning, 'fa-ban': !container.IsRunning }"></i>
                 <!-- Container actions -->
                 <div class="container-actions" ng-show="mouseover">
                     <!-- Start container action -->
