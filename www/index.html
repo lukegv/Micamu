@@ -97,8 +97,19 @@
                 <p><i class="blue fa fa-info-circle space"></i>No containers are installed on this device.</p>
             </div>
             <!-- Containers -->
-            <div class="container-item" ng-if="session.SelectedDevice.isConnected()" ng-repeat="container in session.SelectedDevice.Containers">
-                <p>{{container.Name}}</p>
+            <div class="container-item" ng-if="session.SelectedDevice.isConnected()" ng-repeat="container in session.SelectedDevice.Containers"
+                    ng-mouseover="mouseover = true" ng-mouseleave="mouseover = false">
+                <p class="container-title">{{container.Name}}</p>
+                <i class="container-icon fa" ng-show="!mouseover" 
+                    ng-class="{ 'green fa-play': container.IsRunning, 'fa-stop': !container.IsRunning }"></i>
+                <div class="container-actions" ng-show="mouseover">
+                    <button class="info-action btn btn-success">
+                        <i class="fa fa-play space"></i>Start
+                    </button>
+                    <button class="info-action btn btn-danger">
+                        <i class="fa fa-trash space"></i>Delete
+                    </button>
+                </div>
             </div>
             <!-- Pseudo elements to achieve constant container sizes -->
             <div class="pseudo-item" ng-if="session.SelectedDevice.isConnected()" ng-repeat="pseudo in session.Helper.getPseudos(10) track by $index" ></div>

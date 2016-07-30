@@ -114,6 +114,31 @@ header {
     border: 5px solid #FFD300;
     border-radius: 5px;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.container-title {
+    text-align: center;
+    font-size: 16pt;
+}
+
+.container-icon {
+    margin: auto;
+    text-align: center;
+    font-size: 60pt;
+}
+
+.container-actions {
+    margin: auto 20px;
+}
+
+.container-actions > * {
+    display: block;
+    width: 100%;
+    margin: 5px 0;
 }
 
 .pseudo-item {
