@@ -1,9 +1,10 @@
+// Various package imports to provide file server functionality
 var http = require('http');
 var url = require('url');
 var path = require('path');
 var fs = require('fs');
 var mime = require('mime');
-// Different json-rpc packages are used for server and client functionality
+// Different json-rpc packages are used for server and client functionality of the route function
 var rpc_server = require('jsonrpc');
 var rpc_client = require('node-json-rpc');
 
@@ -11,7 +12,7 @@ var args = process.argv.slice(2);
 var port = (args.length > 0) ? parseInt(args[0]) : 8000;
 console.log("Micamu server listening on port " + port);
 
-// Run a web server on given port
+// Run a web server on the given port
 http.createServer(function(request, response) {
 	// Serve GET requests like a file server
 	if (request.method == "GET") {
@@ -28,9 +29,11 @@ http.createServer(function(request, response) {
 // Define the served JSON RPC methods
 rpcMethods = {
 	// This routes any JSON RPC request to a given endpoint
-	proxy: function(rpc, params) {
+	route: function(rpc, params) {
+		// Extract the endpoint and the method from the parameters
 		var endpoint = params.endpoint.split(':'); delete params.endpoint;
 		var method = params.method; delete params.method;
+		// Configure the RPC client
 		var options = {
 			port: parseInt(endpoint[1]),
 			host: endpoint[0],
@@ -38,8 +41,10 @@ rpcMethods = {
 			strict: false
 		};
 		var client = new rpc_client.Client(options);
+		// Call the method on the remote device
 		client.call({'jsonrpc': '2.0', 'method': method, 'params': params, 'id': 0}, function (error, response) {
 			if (!error && !response) {
+				// Special error when the call is handled, but neither a result nor an error is returned
 				rpc.error({
 					"code": "ENORPCRESP",
 					"address": options.host,

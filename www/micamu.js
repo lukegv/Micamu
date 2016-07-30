@@ -23,7 +23,7 @@ var Container = (function () {
     Container.prototype.request = function (method, params, onResult) {
         // Store instance for callbacks
         var instance = this;
-        json_rpc(instance.ParentDevice.Endpoint, method, params, function (result, error) {
+        route_request(instance.ParentDevice.Endpoint, method, params, function (result, error) {
             if (instance.ParentDevice.hasNoError(error)) {
                 instance.ParentDevice.State = DeviceState.Connected;
                 onResult(instance, result);
@@ -99,7 +99,7 @@ var Device = (function () {
         }
         // Store instance for callbacks
         var instance = this;
-        json_rpc(this.Endpoint, method, params, function (result, error) {
+        route_request(this.Endpoint, method, params, function (result, error) {
             if (instance.hasNoError(error)) {
                 instance.State = DeviceState.Connected;
                 onResult(instance, result);

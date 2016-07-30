@@ -1,8 +1,7 @@
 var http = require("http");
 var	RPCHandler = require("jsonrpc").RPCHandler;
 
-var state =
-{
+var state = {
 	base:true,
 	Container1: true,
 	Container2: false

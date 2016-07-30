@@ -117,11 +117,13 @@ header {
     align-items: stretch;
 }
 
+/* Centers and sizes the title of a container item */
 .container-title {
     text-align: center;
     font-size: 16pt;
 }
 
+/* Centers and sizes the icon of a container item */
 .container-icon {
     margin: auto;
     text-align: center;
@@ -138,6 +140,11 @@ header {
     margin: 5px 0;
 }
 
+/*
+    Flexbox hack:
+    Creates invisible items to fill the last used row and maintain the item size from the full rows.
+    Beside their height of zero (invisibility) they act exactly like container items.
+*/
 .pseudo-item {
     margin: 5px;
     flex: 1 0 150px;

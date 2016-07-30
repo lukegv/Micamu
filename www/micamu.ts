@@ -36,7 +36,7 @@ class Container {
     request(method: string, params: any, onResult: any): void {
         // Store instance for callbacks
         var instance = this;
-        json_rpc(instance.ParentDevice.Endpoint, method, params, function(result: any, error: any) {
+        route_request(instance.ParentDevice.Endpoint, method, params, function(result: any, error: any) {
             if (instance.ParentDevice.hasNoError(error)) {
                 instance.ParentDevice.State = DeviceState.Connected;
                 onResult(instance, result);
@@ -134,7 +134,7 @@ class Device {
         }
         // Store instance for callbacks
         var instance = this;
-        json_rpc(this.Endpoint, method, params, function(result: any, error: any) {
+        route_request(this.Endpoint, method, params, function(result: any, error: any) {
             if (instance.hasNoError(error)) { // Check for error
                 instance.State = DeviceState.Connected;
                 onResult(instance, result);
