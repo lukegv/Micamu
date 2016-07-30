@@ -1,27 +1,44 @@
-.space {
+/*
+    Helper CSS rules for Micamu
+*/
+
+/* Resets some default values from paragraph elements */
+p {
+    margin: 0; /* reset default margin */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Creates a small space between an icon and the text next to it (e.g. on a button) */
+.space { 
     margin-right: 8px;
 }
 
+/* Stains an icon green */
 .green {
     color: green;
 }
 
+/* Stains an icon blue */
 .blue {
     color: dodgerblue;
 }
 
+/* Stains an icon red */
 .red {
     color: red;
 }
 
+/* Displays text to be multiline (without <br>) */
 .multiline {
     white-space: pre;
 }
 
+/* Swipes an element to the right site in a flexbox */
 .swipe-right {
     margin-left: auto !important;
 }
 
+/* Limits the width of an input element */
 .input-max-width {
     max-width: 300px;
 }

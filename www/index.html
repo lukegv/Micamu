@@ -12,7 +12,7 @@
     <script src="libs/angular.min.js"></script>
     <!-- JQuery -->
     <script src="libs/jquery-3.0.0.min.js"></script>
-    <!-- Json-RPC library -->
+    <!-- JSON RPC library -->
     <!-- Source: https://github.com/datagraph/jquery-jsonrpc -->
     <script src="libs/jquery.jsonrpc.js"></script>
     <!-- Micamu javascript files -->
@@ -35,7 +35,7 @@
                 <form class="list-action input-group">
                     <input type="text" class="form-control" placeholder="Enter device endpoint" maxlength="21" ng-model="endpointInput">
                     <span class="input-group-btn">
-                        <button class="btn btn-success" ng-click="session.add(endpointInput)" 
+                        <button class="btn btn-success" ng-click="session.addDevice(endpointInput)" 
                                 ng-disabled="!session.Helper.validateEndpoint(endpointInput)">
                             <i class="fa fa-plus space"></i>Add
                         </button>
@@ -48,11 +48,12 @@
             </div>
             <!-- Devices -->
             <div class="device-item" ng-repeat="device in session.Devices"
-                    ng-class="{ 'selected' : session.isSelected(device) }"
-                    ng-click="session.select(device)" ng-mouseover="mouseover = true" ng-mouseleave="mouseover = false">
+                    ng-class="{ 'selected' : session.isDeviceSelected(device) }"
+                    ng-click="session.selectDevice(device)" ng-mouseover="mouseover = true" ng-mouseleave="mouseover = false">
                 <i class="fa" ng-class="{ 'green fa-check' : device.isConnected(), 'blue fa-spinner fa-pulse' : device.isPending(), 'red fa-exclamation-triangle' : device.isDisconnected() }"></i>
                 <p>{{device.Endpoint}}</p>
-                <button class="btn btn-sm btn-danger swipe-right" ng-show="mouseover" ng-click="session.remove(device); $event.stopPropagation();">
+                <!-- Remove device action -->
+                <button class="btn btn-sm btn-danger swipe-right" ng-show="mouseover" ng-click="session.removeDevice(device); $event.stopPropagation();">
                     <i class="fa fa-trash"></i>
                 </button>
             </div>
@@ -64,22 +65,24 @@
                 <!-- Add container action -->
                 <fieldset ng-disabled="!session.SelectedDevice.isConnected()">
                     <form class="item-action input-group input-max-width">
-                        <input type="text" class="form-control" placeholder="Enter container name" maxlength="21"
+                        <input type="text" class="form-control" placeholder="Enter container name" maxlength="20"
                                 ng-model="containerInput">
                         <span class="input-group-btn">
-                            <button class="btn btn-success">
+                            <button class="btn btn-success" ng-disabled="!session.SelectedDevice.isContainerNameValid(containerInput)"
+                                    ng-click="session.SelectedDevice.installContainer(containerInput)">
                                 <i class="fa fa-plus space"></i>Install
                             </button>
                         </span>
                     </form>
                 </fieldset>
                 <!-- Reboot device action -->
-                <button class="info-action btn btn-warning" ng-disabled="!session.SelectedDevice.isConnected()">
+                <button class="info-action btn btn-warning" ng-disabled="!session.SelectedDevice.isConnected()"
+                        ng-click="session.SelectedDevice.reboot()">
                     <i class="fa fa-repeat space"></i>Reboot
                 </button>
-                <!-- Refresh action -->
+                <!-- Refresh device action -->
                 <button class="info-action btn btn-info swipe-right" ng-disabled="session.SelectedDevice.isPending()"
-                        ng-click="session.SelectedDevice.refresh()">
+                        ng-click="session.SelectedDevice.requestContainers()">
                     <i class="fa fa-refresh space"></i>Refresh
                 </button>
             </div>
@@ -101,12 +104,19 @@
                     ng-mouseover="mouseover = true" ng-mouseleave="mouseover = false">
                 <p class="container-title">{{container.Name}}</p>
                 <i class="container-icon fa" ng-show="!mouseover" 
-                    ng-class="{ 'green fa-play': container.IsRunning, 'fa-stop': !container.IsRunning }"></i>
+                    ng-class="{ 'fa-play': container.IsRunning, 'fa-stop': !container.IsRunning }"></i>
+                <!-- Container actions -->
                 <div class="container-actions" ng-show="mouseover">
-                    <button class="info-action btn btn-success">
+                    <!-- Start container action -->
+                    <button class="info-action btn btn-success" ng-show="!container.IsRunning" ng-click="container.start()">
                         <i class="fa fa-play space"></i>Start
                     </button>
-                    <button class="info-action btn btn-danger">
+                    <!-- Stop container action -->
+                    <button class="info-action btn btn-warning" ng-show="container.IsRunning" ng-click="container.stop()">
+                        <i class="fa fa-stop space"></i>Stop
+                    </button>
+                    <!-- Delete container action -->
+                    <button class="info-action btn btn-danger" ng-click="session.SelectedDevice.deleteContainer(container)">
                         <i class="fa fa-trash space"></i>Delete
                     </button>
                 </div>

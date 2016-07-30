@@ -14,6 +14,45 @@ class Container {
         this.ParentDevice = parent;
         this.IsRunning = isRunning;
     }
+
+    start(): void {
+        this.request(this, 'start_container', { 'name': this.Name }, this.onCommandResult);
+    }
+
+    stop(): void {
+        this.request(this, 'stop_container', { 'name': this.Name }, this.onCommandResult);
+    }
+
+    requestState(): void {
+        this.request(this, 'get_state', { 'name': this.Name }, this.onStateResult);
+    }
+
+    setState(state: boolean): void {
+        this.IsRunning = state;
+    }
+
+    /* Requests */
+
+    request(instance: Container, method: string, params: any, onResult: any): void {
+        json_rpc(this.ParentDevice.Endpoint, method, params, function(result: any, error: any) {
+            if (instance.ParentDevice.hasNoError(error)) {
+                instance.ParentDevice.State = DeviceState.Connected;
+                onResult(instance, result);
+            }
+            AngularScope.$apply();
+        })
+    }
+
+    /* Callbacks */
+
+    onCommandResult(instance: Container, result: any): void {
+        instance.requestState();
+    }
+
+    onStateResult(instance: Container, result: any): void {
+        instance.setState(result.container_state);
+    }
+
 }
 
 enum DeviceState {
@@ -34,7 +73,7 @@ class Device {
         this.Endpoint = endpoint;
         this.Containers = [];
         this.State = DeviceState.Disconnected;
-        this.request('get_containers', {}, this.onContainerResult);
+        this.requestContainers();
     }
 
     isConnected(): boolean {
@@ -53,21 +92,46 @@ class Device {
         return this.isConnected() && this.Containers.length == 0;
     }
 
-    refresh(): void {
-        this.request('get_containers', {}, this.onContainerResult);
+    requestContainers(): void {
+        this.request(this, 'get_containers', {}, this.onContainerResult);
+    }
+
+    setContainers(containers): void {
+        this.Containers = [];
+        for (var container in containers) {
+            this.Containers.push(new Container(container, this, containers[container]));
+        }
+    }
+
+    reboot(): void {
+        
+    }
+
+    isContainerNameValid(name: string): boolean {
+        if (name && name.length > 0) {
+            return this.Containers.map(c => c.Name).indexOf(name) == -1;
+        } else {
+            return false;
+        }
+    }
+
+    installContainer(name: string): void {
+        this.request(this, 'install_container', { 'name': name }, this.onCommandResult);
+    }
+
+    deleteContainer(container: Container): void {
+        this.request(this, 'delete_container', { 'name': container.Name }, this.onCommandResult);
     }
 
     /* Requests */
 
-    request(method: string, params: any, onResult: any) : void {
-        // Set the state to pending
+    request(instance: Device, method: string, params: any, onResult: any) : void {
+        // Set the state to pending if currently disconnected
         if (this.State == DeviceState.Disconnected) {
             this.State = DeviceState.Pending;
         }
-        // Store instance for callback
-        var instance = this;
         json_rpc(this.Endpoint, method, params, function(result: any, error: any) {
-            if (instance.checkError(error)) { // Check for error
+            if (instance.hasNoError(error)) { // Check for error
                 instance.State = DeviceState.Connected;
                 onResult(instance, result);
             }
@@ -75,7 +139,7 @@ class Device {
         });
     }
 
-    checkError(error: any): boolean {
+    hasNoError(error: any): boolean {
         if (error) {
             this.State = DeviceState.Disconnected;
             this.LastError = JSON.stringify(error, null, 4);
@@ -85,12 +149,14 @@ class Device {
 
     /* Callbacks */
 
-    onContainerResult(instance: Device, containers: any): void {
-        instance.Containers = [];
-        for (var container in containers) {
-            instance.Containers.push(new Container(container, instance, containers[container]));
-        }
+    onCommandResult(instance: Device, result: any): void {
+        instance.requestContainers();
     }
+
+    onContainerResult(instance: Device, result: any): void {
+        instance.setContainers(result);
+    }
+    
 }
 
 class Session {
@@ -107,24 +173,24 @@ class Session {
         ];
     }
 
-    add(newEndpoint: string) {
+    addDevice(newEndpoint: string) {
         this.Devices.push(new Device(newEndpoint));
     }
 
-    select(device: Device) {
-        if (this.isSelected(device)) {
+    selectDevice(device: Device) {
+        if (this.isDeviceSelected(device)) {
             this.SelectedDevice = null;
         } else {
             this.SelectedDevice = device;
         }
     }
 
-    isSelected(device: Device): boolean {
+    isDeviceSelected(device: Device): boolean {
         return this.SelectedDevice === device;
     }
 
-    remove(device: Device) {
-        if (this.isSelected(device)) {
+    removeDevice(device: Device) {
+        if (this.isDeviceSelected(device)) {
             this.SelectedDevice = null;
         }
         var index = this.Devices.indexOf(device);

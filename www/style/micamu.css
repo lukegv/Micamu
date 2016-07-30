@@ -1,19 +1,17 @@
-﻿body {
+﻿/*
+    CSS rule set for the Micamu project
+*/
+
+body {
     height: 100vh;
     margin: 0;
     padding: 0 2.5%;
     background-color: #FFD300; /* Harting yellow */
 }
 
-p {
-    margin: 0; /* reset default margin */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
 header {
     height: 80px;
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
     align-items: center;
 }
@@ -56,7 +54,7 @@ header {
 .device-item {
     margin: 5px;
     padding: 5px;
-    border: 5px solid #FFD300;
+    border: 5px solid #FFD300; /* Harting yellow */
     border-radius: 5px;
     font-size: 16pt;
     display: flex;
@@ -64,8 +62,7 @@ header {
 }
 
 .device-item > * {
-    margin-left: 5px;
-    margin-right: 5px;
+    margin: 0 5px;
 }
 
 .selected {
@@ -111,12 +108,11 @@ header {
     padding: 5px;
     flex: 1 0 150px;
     height: 150px;
-    border: 5px solid #FFD300;
+    border: 5px solid #FFD300; /* Harting yellow */
     border-radius: 5px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
     align-items: stretch;
 }
 
