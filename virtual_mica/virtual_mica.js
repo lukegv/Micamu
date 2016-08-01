@@ -17,7 +17,7 @@ http.createServer(function (request, response) {
         // if POST request, handle RPC
         new RPCHandler(request, response, RPCMethods, true);
     } else {
-        // if GET request response with greeting
+        // if GET request, response with greeting
         response.end("Hello world!");
     }
 }).listen(port);

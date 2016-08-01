@@ -6,8 +6,12 @@
     <title>Micamu</title>
     <!-- Bootstrap for button design -->
     <link rel="stylesheet" href="style/bootstrap.min.css" type="text/css" />
+    <!-- Micamu favicon -->
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">    
     <!-- Font Awesome icons -->
     <link rel="stylesheet" href="style/font-awesome.min.css" type="text/css" />
+    <!-- Micamu CSS files -->
     <link rel="stylesheet" href="style/helpers.css" type="text/css" />
     <link rel="stylesheet" href="style/micamu.css" type="text/css" />
     <!-- AngularJS -->
@@ -17,7 +21,9 @@
     <!-- JSON RPC library -->
     <!-- Source: https://github.com/datagraph/jquery-jsonrpc -->
     <script src="libs/jquery.jsonrpc.js"></script>
-    <!-- Micamu javascript files -->
+    <!-- Server generated javascript file storing the device endpoints cross-session -->
+    <script src="devices_generated.js"></script>
+    <!-- Micamu JS files -->
     <script src="json-rpc.js"></script>
     <script src="micamu.js"></script>
 </head>
@@ -44,7 +50,7 @@
                     </span>
                 </form>
                 <!-- Save devices action -->
-                <button class="list-action btn btn-info">
+                <button class="list-action btn btn-info" ng-click="session.saveDevices()">
                     <i class="fa fa-floppy-o space"></i>Save
                 </button> 
             </div>

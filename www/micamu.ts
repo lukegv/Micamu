@@ -1,8 +1,16 @@
-﻿/// <reference path="json-rpc.js" />
+﻿/*
+    Micamu client implementation
+
+    This is based on AngularJS and defines a model, which is bound to the elements in the HTML view.
+*/
+
+/// <reference path="json-rpc.js" />
+/// <reference path="devices_generated.js" />
 
 // Global angular scope, required for view updates
 let AngularScope;
 
+// Represents a software container on a virtual MICA
 class Container {
     Name: string;
     ParentDevice: Device;
@@ -54,15 +62,16 @@ class Container {
     onStateResult(instance: Container, result: any): void {
         instance.setState(result.container_state);
     }
-
 }
 
+// Provides the possible device connection states
 enum DeviceState {
     Connected = 0,
     Pending = 1,
     Disconnected = 2
 }
 
+// Represents a virtual MICA device
 class Device {
     Endpoint: string;
 
@@ -143,6 +152,8 @@ class Device {
         });
     }
 
+    /* Error detection */
+
     hasNoError(error: any): boolean {
         if (error) {
             this.State = DeviceState.Disconnected;
@@ -160,9 +171,12 @@ class Device {
     onContainerResult(instance: Device, result: any): void {
         instance.setContainers(result);
     }
-    
 }
 
+/*
+    AngularJS model for the complete Micamu client
+    This handles a Micamu client browser window session
+*/
 class Session {
     Helper: Helper;
 
@@ -172,16 +186,26 @@ class Session {
     constructor($scope) {
         AngularScope = $scope; // Set global angular scope
         this.Helper = new Helper();
-        this.Devices = [
-            new Device("127.0.0.1:8001")
-        ];
+        this.loadDevices();
     }
 
-    addDevice(newEndpoint: string) {
+    loadDevices(): void {
+        // Extract the devices from the generated devices.js file
+        this.Devices = endpoints.map((endpoint) => new Device(endpoint));
+    }
+
+    saveDevices(): void {
+        // Save the devices via JSON RPC call
+        save_endpoints(this.Devices.map(device => device.Endpoint), function(response, error) {
+            
+        });
+    }
+
+    addDevice(newEndpoint: string): void {
         this.Devices.push(new Device(newEndpoint));
     }
 
-    selectDevice(device: Device) {
+    selectDevice(device: Device): void {
         if (this.isDeviceSelected(device)) {
             this.SelectedDevice = null;
         } else {
@@ -193,7 +217,7 @@ class Session {
         return this.SelectedDevice === device;
     }
 
-    removeDevice(device: Device) {
+    removeDevice(device: Device): void {
         if (this.isDeviceSelected(device)) {
             this.SelectedDevice = null;
         }
@@ -202,11 +226,14 @@ class Session {
     }
 }
 
+// Provides some static helper functions
 class Helper {
+    // Creates an amount of empty javascript elements
     getPseudos(count: number): any[] {
         return new Array(count);
     }
 
+    // Checks if a given string contains a network endpoint (IP:PORT)
     validateEndpoint(str: string): boolean {
         var endpointRegex = /^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}):([0-9]{1,5})$/;
         return endpointRegex.test(str);

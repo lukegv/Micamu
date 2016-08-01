@@ -1,4 +1,5 @@
 /// <reference path="json-rpc.js" />
+/// <reference path="devices.js" />
 // Global angular scope, required for view updates
 var AngularScope;
 var Container = (function () {
@@ -107,6 +108,7 @@ var Device = (function () {
             AngularScope.$apply(); // Update the view from the callback
         });
     };
+    /* Error detection */
     Device.prototype.hasNoError = function (error) {
         if (error) {
             this.State = DeviceState.Disconnected;
@@ -127,10 +129,17 @@ var Session = (function () {
     function Session($scope) {
         AngularScope = $scope; // Set global angular scope
         this.Helper = new Helper();
-        this.Devices = [
-            new Device("127.0.0.1:8001")
-        ];
+        this.loadDevices();
     }
+    Session.prototype.loadDevices = function () {
+        // Extract the devices from the generated devices.js file
+        this.Devices = endpoints.map(function (endpoint) { return new Device(endpoint); });
+    };
+    Session.prototype.saveDevices = function () {
+        // Save the devices via JSON RPC call
+        save_endpoints(this.Devices.map(function (device) { return device.Endpoint; }), function (response, error) {
+        });
+    };
     Session.prototype.addDevice = function (newEndpoint) {
         this.Devices.push(new Device(newEndpoint));
     };

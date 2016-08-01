@@ -1,4 +1,11 @@
-// Various package imports to provide file server functionality
+/*
+	Micamu server implementation for Node.js
+
+	Usage:
+	node micamu_server.js [port]
+*/
+
+// Various package imports to provide web server functionality
 var http = require('http');
 var url = require('url');
 var path = require('path');
@@ -8,13 +15,14 @@ var mime = require('mime');
 var rpc_server = require('jsonrpc');
 var rpc_client = require('node-json-rpc');
 
+// Extract the port from the command line arguments
 var args = process.argv.slice(2);
 var port = (args.length > 0) ? parseInt(args[0]) : 8000;
-console.log("Micamu server listening on port " + port);
 
+console.log("Micamu server listening on port " + port);
 // Run a web server on the given port
 http.createServer(function(request, response) {
-	// Serve GET requests like a file server
+	// Serve GET requests like a web server (simple file deliveries)
 	if (request.method == "GET") {
 		var uri = url.parse(request.url).pathname;
 		var file = path.join(process.cwd(), '/www', uri);
@@ -26,9 +34,11 @@ http.createServer(function(request, response) {
 	}
 }).listen(port);
 
+var idCounter = 0;
+
 // Define the served JSON RPC methods
 rpcMethods = {
-	// This routes any JSON RPC request to a given endpoint
+	// RPC method to route any JSON RPC request to a given endpoint
 	route: function(rpc, params) {
 		// Extract the endpoint and the method from the parameters
 		var endpoint = params.endpoint.split(':'); delete params.endpoint;
@@ -42,7 +52,7 @@ rpcMethods = {
 		};
 		var client = new rpc_client.Client(options);
 		// Call the method on the remote device
-		client.call({'jsonrpc': '2.0', 'method': method, 'params': params, 'id': 0}, function (error, response) {
+		client.call({'jsonrpc': '2.0', 'method': method, 'params': params, 'id': idCounter++}, function (error, response) {
 			if (!error && !response) {
 				// Special error when the call is handled, but neither a result nor an error is returned
 				rpc.error({
@@ -56,6 +66,17 @@ rpcMethods = {
 				} else {
 					rpc.response(response.result);
 				}
+			}
+		});
+	},
+	// RPC method to store a list of endpoints in a generated javascript file
+	save: function(rpc, params) {
+		var declaration = "var endpoints = ";
+		fs.writeFile("www/devices_generated.js", declaration + JSON.stringify(params.endpoints), function(error) {
+			if (error) {
+				rpc.error(err);
+			} else {
+				rpc.response("Saved endpoints");
 			}
 		});
 	}
